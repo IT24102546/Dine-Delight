@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Event Places - Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background:#F8F5F0; color:#3C3C3C; min-height:100vh; }
+        .layout { display:flex; min-height:100vh; }
+        .sidebar { width:220px; background:#fff; border-right:1px solid #eee; padding:22px 18px; position:sticky; top:0; align-self:flex-start; height:100vh; }
+        .brand { display:flex; align-items:center; gap:10px; color:#AF2C2C; font-weight:800; margin-bottom:18px; }
+        .nav { list-style:none; }
+        .nav li { margin-bottom:8px; }
+        .nav a { display:flex; align-items:center; gap:10px; padding:10px 12px; color:#3C3C3C; text-decoration:none; border-radius:8px; }
+        .nav a:hover, .nav a.active { background:#F8F5F0; color:#AF2C2C; }
+        .main { flex:1; padding:0 24px 24px 24px; }
+        .wrap { width:100%; max-width:1200px; margin:0 auto; }
+        .header { background:#AF2C2C; color:#fff; padding:20px 28px; display:flex; align-items:center; justify-content:space-between; border-radius:0 0 16px 16px; box-shadow:0 4px 14px rgba(0,0,0,.08); }
+        .header h1 { font-size:1.4rem; }
+        .header a { color:#fff; text-decoration:none; font-weight:600; }
+        .content { padding:26px 0; display:grid; grid-template-columns: 1fr 1fr; gap:18px; }
+        .card { border:1px solid #eee; border-radius:12px; padding:18px; background:#fff; box-shadow:0 6px 14px rgba(0,0,0,.04); }
+        .card h2 { color:#AF2C2C; font-size:1.2rem; margin-bottom:12px; }
+        label { font-weight:600; font-size:.9rem; display:block; margin-bottom:6px; }
+        input, select { width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; margin-bottom:10px; background:#fff; }
+        table { width:100%; border-collapse:separate; border-spacing:0; }
+        th, td { text-align:left; padding:10px 12px; border-bottom:1px solid #eee; }
+        th { color:#AF2C2C; }
+        .btn { display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius:8px; border:1px solid #AF2C2C; background:#AF2C2C; color:#fff; cursor:pointer; font-weight:600; }
+        .btn:hover { background:#942525; border-color:#942525; }
+        @media (max-width: 1000px) {
+            .layout { flex-direction:column; }
+            .sidebar { position:static; height:auto; width:100%; border-right:none; border-bottom:1px solid #eee; }
+            .content { grid-template-columns:1fr; }
+        }
+    </style>
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="brand"><i class="fas fa-utensils"></i> Dine & Delight</div>
+        <ul class="nav">
+            <li><a href="/admin/dashboard"><i class="fas fa-gauge"></i>Dashboard</a></li>
+            <li><a class="active" href="/admin/places"><i class="fas fa-map-marker-alt"></i>Event Spaces</a></li>
+            <li><a href="/admin/reservations"><i class="fas fa-chair"></i>Table Reservations</a></li>
+            <li><a href="/admin/menu"><i class="fas fa-burger"></i>Menu</a></li>
+            <li><a href="/admin/events"><i class="fas fa-clipboard-check"></i> Event Requests</a></li>
+            <li><a href="/admin/inquiries"><i class="fas fa-question-circle"></i> Inquiries</a></li>
+            <li><a href="/admin/orders"><i class="fas fa-receipt"></i>Food Orders</a></li>
+            <hr>
+            <li><a href="/profile"><i class="fas fa-id-badge"></i> My Profile</a></li>
+            <li><a href="/logout"><i class="fas fa-right-from-bracket"></i> Logout</a></li>
+        </ul>
+    </aside>
+    <main class="main">
+        <div class="wrap">
+            <div class="header">
+                <h1><i class="fas fa-map-marker-alt"></i> Manage Event Places</h1>
+                <div>
+                    <a href="/admin/events" style="margin-right:8px"><i class="fas fa-clipboard-check"></i> Pending Requests</a>
+                    <a href="/admin/dashboard" style="margin-right:8px"><i class="fas fa-gauge"></i> Admin Dashboard</a>
+                    <a href="/logout"><i class="fas fa-right-from-bracket"></i> Logout</a>
+                </div>
+            </div>
+            <div class="content">
+                <div class="card">
+                    <h2>Add Location</h2>
+                    <form id="addLocationForm" th:action="@{/admin/places/location}" method="post">
+                        <label>Location Name</label>
+                        <input type="text" name="name" placeholder="e.g. Main Hall Complex" required pattern="^[\p{L}0-9&()\- ,.]{2,60}$" aria-describedby="locHelp">
+                        <small id="locHelp" style="color:#666; font-size:0.85rem;">2-60 chars: letters, numbers, spaces and & ( ) - , .</small>
+                        <div id="locErr" style="color:#B91C1C; font-size:0.85rem; display:none;">Enter a valid location name (2-60 allowed characters).</div>
+                        <button class="btn" type="submit"><i class="fas fa-plus"></i> Add Location</button>
+                    </form>
+                    <h2 style="margin-top:16px">Existing Locations</h2>
+                    <table>
+                        <thead><tr><th>Name</th><th>Actions</th></tr></thead>
+                        <tbody>
+                        <tr th:each="l : ${locations}">
+                            <td th:text="${l.name}"></td>
+                            <td>
+                                <form th:action="@{'/admin/places/location/' + ${l.id} + '/delete'}" method="post" onsubmit="return confirm('Delete location ' + /*[[${l.name}]]*/ 'this' + ' and all its spaces?');">
+                                    <button class="btn" type="submit" style="background:#B91C1C; border-color:#B91C1C"><i class="fas fa-trash"></i> Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card">
+                    <h2>Add Space</h2>
+                    <form id="addSpaceForm" th:action="@{/admin/places/space}" method="post">
+                        <label>Space Name</label>
+                        <input type="text" name="name" placeholder="e.g. Ballroom C" required pattern="^[\p{L}0-9&()\- ,.]{2,60}$" aria-describedby="spaceNameHelp">
+                        <small id="spaceNameHelp" style="color:#666; font-size:0.85rem;">2-60 chars: letters, numbers, spaces and & ( ) - , .</small>
+                        <div id="spaceNameErr" style="color:#B91C1C; font-size:0.85rem; display:none;">Enter a valid space name.</div>
+                        <label>Capacity</label>
+                        <input type="number" name="capacity" min="1" required aria-describedby="spaceCapHelp">
+                        <small id="spaceCapHelp" style="color:#666; font-size:0.85rem;">Minimum 1 guest.</small>
+                        <div id="spaceCapErr" style="color:#B91C1C; font-size:0.85rem; display:none;">Capacity must be at least 1.</div>
+                        <label>Price per Person per Hour (LKR)</label>
+                        <input type="number" name="pricePerPersonPerHourLkr" min="0" step="1" placeholder="1000" required aria-describedby="spacePriceHelp">
+                        <small id="spacePriceHelp" style="color:#666; font-size:0.85rem;">Whole number in LKR. Example: 1000 means LKR 1000.00</small>
+                        <div id="spacePriceErr" style="color:#B91C1C; font-size:0.85rem; display:none;">Price must be a whole number ≥ 0.</div>
+                        <label>Location</label>
+                        <select name="locationId" required>
+                            <option value="" disabled selected>Select location</option>
+                            <option th:each="l : ${locations}" th:value="${l.id}" th:text="${l.name}"></option>
+                        </select>
+                        <button class="btn" type="submit"><i class="fas fa-plus"></i> Add Space</button>
+                    </form>
+                    <h2 style="margin-top:16px">Existing Spaces</h2>
+                    <table>
+                        <thead><tr><th>Name</th><th>Capacity</th><th>Price per Person/Hour</th><th>Location</th><th>Actions</th></tr></thead>
+                        <tbody>
+                        <tr th:each="s : ${spaces}">
+                            <td th:text="${s.name}"></td>
+                            <td th:text="${s.capacity}"></td>
+                            <td th:text="'LKR ' + ${#numbers.formatDecimal(s.pricePerPersonPerHourCents / 100.0, 1, 'COMMA', 2, 'POINT')}">LKR 1000.00</td>
+                            <td th:text="${s.location.name}"></td>
+                            <td style="display:flex; gap:8px;">
+                                <button class="btn" type="button"
+                                        th:attr="data-id=${s.id},data-name=${s.name},data-capacity=${s.capacity},data-pricecents=${s.pricePerPersonPerHourCents},data-location=${s.location.id}"
+                                        onclick="openSpaceEditModal(this)"><i class="fas fa-pen"></i> Edit</button>
+                                <form th:action="@{'/admin/places/space/' + ${s.id} + '/delete'}" method="post" onsubmit="return confirm('Delete space ' + /*[[${s.name}]]*/ 'this' + '?');">
+                                    <button class="btn" type="submit" style="background:#B91C1C; border-color:#B91C1C"><i class="fas fa-trash"></i> Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+<script>
+    // Modal styles (re-use pattern from dashboard)
+    const modalStyles2 = document.createElement('style');
+    modalStyles2.innerHTML = `
+    .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.4); display:none; align-items:center; justify-content:center; padding:16px; }
+    .modal { width:100%; max-width:620px; background:#fff; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.2); }
+    .modal header { padding:16px 20px; border-bottom:1px solid #eee; display:flex; align-items:center; justify-content:space-between; }
+    .modal .body { padding:18px 20px; }
+    .modal .actions { padding:14px 20px; border-top:1px solid #eee; display:flex; gap:10px; justify-content:flex-end; }
+  `;
+    document.head.appendChild(modalStyles2);
+
+    function openSpaceEditModal(btn){
+        const id = btn.getAttribute('data-id');
+        const name = btn.getAttribute('data-name');
+        const capacity = btn.getAttribute('data-capacity');
+        const priceCents = parseInt(btn.getAttribute('data-pricecents') || '0', 10);
+        const location = btn.getAttribute('data-location');
+        const form = document.getElementById('spaceEditForm');
+        form.action = '/admin/places/space/' + id;
+        document.getElementById('editSpaceName').value = name;
+        document.getElementById('editSpaceCapacity').value = capacity;
+        document.getElementById('editSpacePrice').value = Math.round(priceCents / 100);
+        const select = document.getElementById('editSpaceLocation');
+        if (select) select.value = location;
+        document.getElementById('spaceEditOverlay').style.display = 'flex';
+    }
+    function closeSpaceEditModal(){
+        document.getElementById('spaceEditOverlay').style.display = 'none';
+    }
+    document.addEventListener('DOMContentLoaded', function(){
+        const overlay = document.getElementById('spaceEditOverlay');
+        if (overlay) overlay.addEventListener('click', function(e){ if(e.target===this) closeSpaceEditModal(); });
+
+        // Validation - Add Location
+        const addLoc = document.getElementById('addLocationForm');
+        if (addLoc) addLoc.addEventListener('submit', function(e){
+            const name = this.querySelector('[name="name"]').value.trim();
+            const ok = /^[\p{L}0-9&()\- ,.]{2,60}$/u.test(name);
+            document.getElementById('locErr').style.display = ok ? 'none' : 'block';
+            if (!ok) e.preventDefault();
+        });
+
+        // Validation - Add Space
+        const addSpace = document.getElementById('addSpaceForm');
+        if (addSpace) addSpace.addEventListener('submit', function(e){
+            const name = this.querySelector('[name="name"]').value.trim();
+            const cap = parseInt(this.querySelector('[name="capacity"]').value || '0', 10);
+            const price = parseInt(this.querySelector('[name="pricePerPersonPerHourLkr"]').value || '0', 10);
+            const nameOk = /^[\p{L}0-9&()\- ,.]{2,60}$/u.test(name);
+            const capOk = cap >= 1;
+            const priceOk = Number.isInteger(price) && price >= 0;
+            document.getElementById('spaceNameErr').style.display = nameOk ? 'none' : 'block';
+            document.getElementById('spaceCapErr').style.display = capOk ? 'none' : 'block';
+            document.getElementById('spacePriceErr').style.display = priceOk ? 'none' : 'block';
+            if (!(nameOk && capOk && priceOk)) e.preventDefault();
+        });
+    });
+</script>
+
+<!-- Edit Space Modal -->
+<div id="spaceEditOverlay" class="modal-overlay">
+    <div class="modal">
+        <header>
+            <h3>Edit Space</h3>
+            <button class="btn" type="button" onclick="closeSpaceEditModal()" style="background:#6B7280; border-color:#6B7280"><i class="fas fa-times"></i></button>
+        </header>
+        <div class="body">
+            <form id="spaceEditForm" method="post">
+                <label>Space Name</label>
+                <input id="editSpaceName" name="name" type="text" required>
+                <label>Capacity</label>
+                <input id="editSpaceCapacity" name="capacity" type="number" min="1" required>
+                <label>Price per Person per Hour (LKR)</label>
+                <input id="editSpacePrice" name="pricePerPersonPerHourLkr" type="number" min="0" step="1" required>
+                <label>Location</label>
+                <select id="editSpaceLocation" name="locationId" required>
+                    <option th:each="l : ${locations}" th:value="${l.id}" th:text="${l.name}"></option>
+                </select>
+                <div class="actions">
+                    <button class="btn" type="button" onclick="closeSpaceEditModal()" style="background:#6B7280; border-color:#6B7280">Cancel</button>
+                    <button class="btn" type="submit"><i class="fas fa-save"></i> Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+
+

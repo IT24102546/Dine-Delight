@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment - Dine & Delight</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary:'#F8F5F0',
+            secondary:'#D4A76A',
+            accent:'#AF2C2C',
+            darktext:'#3C3C3C'
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-primary text-darktext min-h-screen">
+<div class="flex h-screen">
+  <!-- Sidebar -->
+  <div class="w-64 bg-secondary text-white p-4 flex flex-col">
+    <div class="flex items-center mb-8">
+      <i class="fas fa-utensils text-2xl mr-3"></i>
+      <h1 class="text-xl font-bold">Dine & Delight</h1>
+    </div>
+    <nav class="flex-1">
+      <a href="/dashboard" class="flex items-center py-3 px-4 hover:bg-secondary/80 rounded-lg mb-2">
+        <i class="fas fa-gauge mr-3"></i> Dashboard
+      </a>
+      <a href="/reservations" class="flex items-center py-3 px-4 hover:bg-secondary/80 rounded-lg mb-2">
+        <i class="fas fa-calendar mr-3"></i> Make Reservation
+      </a>
+      <a href="/reservations/my" class="flex items-center py-3 px-4 hover:bg-secondary/80 rounded-lg mb-2">
+        <i class="fas fa-list mr-3"></i> My Reservations
+      </a>
+      <a href="/events/my" class="flex items-center py-3 px-4 hover:bg-secondary/80 rounded-lg mb-2">
+        <i class="fas fa-calendar-check mr-3"></i> My Event Requests
+      </a>
+      <a href="/menu" class="flex items-center py-3 px-4 hover:bg-secondary/80 rounded-lg mb-2">
+        <i class="fas fa-utensils mr-3"></i> Menu
+      </a>
+    </nav>
+    <div class="p-4 border-t border-secondary/30">
+      <a href="/logout" class="flex items-center py-2 px-4 hover:bg-secondary/80 rounded-lg">
+        <i class="fas fa-right-from-bracket mr-3"></i> Logout
+      </a>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <div class="flex-1 overflow-y-auto">
+    <div class="p-8">
+      <div class="max-w-2xl mx-auto">
+        <div class="bg-white rounded-xl shadow-sm p-8">
+          <div class="text-center mb-8">
+            <i class="fas fa-credit-card text-4xl text-accent mb-4"></i>
+            <h1 class="text-2xl font-bold text-darktext">Payment Required</h1>
+            <p class="text-gray-600 mt-2">Complete your reservation with advance payment</p>
+          </div>
+
+          <!-- Reservation Summary -->
+          <div class="bg-gray-50 rounded-lg p-6 mb-6">
+            <h3 class="font-semibold text-darktext mb-4">Reservation Summary</h3>
+            <div class="space-y-2">
+              <div class="flex justify-between">
+                <span class="text-gray-600">Table:</span>
+                <span class="font-medium" th:text="${reservation.diningTable.tableCode}">T1</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Date & Time:</span>
+                <span class="font-medium" th:text="${#temporals.format(reservation.startTime, 'MMM d, yyyy h:mm a')}"></span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Guests:</span>
+                <span class="font-medium" th:text="${reservation.guestCount}"></span>
+              </div>
+              <hr class="my-3">
+              <div class="flex justify-between">
+                <span class="text-gray-600">Total Price:</span>
+                <span class="font-medium"
+                      th:text="'LKR ' + ${#numbers.formatDecimal(reservation.totalPrice, 1, 'COMMA', 2, 'POINT')}">LKR 0.00</span>
+              </div>
+              <div class="flex justify-between text-accent">
+                <span class="font-semibold">Advance Payment (20%):</span>
+                <span class="font-bold text-lg"
+                      th:text="'LKR ' + ${#numbers.formatDecimal(reservation.advancePayment, 1, 'COMMA', 2, 'POINT')}">LKR 0.00</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment Form -->
+          <form id="reservationPaymentForm"
+                th:action="@{'/reservations/' + ${reservation.id} + '/payment'}"
+                method="post" th:object="${paymentForm}">
+            <div class="space-y-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Card Number</label>
+                <input type="text" th:field="*{cardNumber}"
+                       placeholder="1234 5678 9012 3456"
+                       maxlength="19"
+                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent">
+                <small class="text-gray-500">Enter 16-digit card number (starts with 3, 4, or 5)</small>
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Expiry Date</label>
+                  <input type="text" th:field="*{expiry}"
+                         placeholder="MM/YY"
+                         maxlength="5"
+                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">CVV</label>
+                  <input type="text" th:field="*{cvv}"
+                         placeholder="123"
+                         maxlength="3"
+                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Cardholder Name</label>
+                <input type="text" th:field="*{cardholderName}"
+                       placeholder="John Doe"
+                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent">
+              </div>
+
+              <div class="flex gap-4">
+                <button type="submit"
+                        class="flex-1 bg-accent text-white py-3 px-6 rounded-lg hover:bg-accent/90 font-semibold">
+                  <i class="fas fa-lock mr-2"></i>
+                  Pay LKR <span th:text="${#numbers.formatDecimal(reservation.advancePayment, 1, 'COMMA', 2, 'POINT')}">0.00</span>
+                </button>
+                <a href="/reservations/my"
+                   class="flex-1 bg-gray-300 text-gray-700 py-3 px-6 rounded-lg hover:bg-gray-400 font-semibold text-center">
+                  Cancel
+                </a>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ✅ Input restrictions -->
+<script>
+  // Allow only digits for card number, format in groups of 4
+  const cardInput = document.querySelector('input[name="cardNumber"]');
+  cardInput.addEventListener('input', function (e) {
+    let value = e.target.value.replace(/\D/g, ''); // remove non-digits
+    value = value.substring(0, 16); // limit to 16 digits
+    e.target.value = value.replace(/(\d{4})(?=\d)/g, '$1 ');
+  });
+
+  // Expiry: digits only, format as MM/YY
+  const expiryInput = document.querySelector('input[name="expiry"]');
+  expiryInput.addEventListener('input', function (e) {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length > 2) value = value.substring(0, 2) + '/' + value.substring(2, 4);
+    e.target.value = value.substring(0, 5);
+  });
+
+  // CVV: only digits, 3 max
+  const cvvInput = document.querySelector('input[name="cvv"]');
+  cvvInput.addEventListener('input', function (e) {
+    e.target.value = e.target.value.replace(/\D/g, '').substring(0, 3);
+  });
+</script>
+</body>
+</html>

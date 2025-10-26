@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Table Reservations</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background:#F8F5F0; color:#3C3C3C; min-height:100vh; }
+        .layout { display:flex; min-height:100vh; }
+        .sidebar { width:220px; background:#fff; border-right:1px solid #eee; padding:22px 18px; position:sticky; top:0; align-self:flex-start; height:100vh; }
+        .brand { display:flex; align-items:center; gap:10px; color:#AF2C2C; font-weight:800; margin-bottom:18px; }
+        .nav { list-style:none; }
+        .nav li { margin-bottom:8px; }
+        .nav a { display:flex; align-items:center; gap:10px; padding:10px 12px; color:#3C3C3C; text-decoration:none; border-radius:8px; }
+        .nav a:hover, .nav a.active { background:#F8F5F0; color:#AF2C2C; }
+        .main { flex:1; padding:0 24px 24px 24px; }
+        .wrap { width:100%; max-width:1200px; margin:0 auto; }
+        .header { background:#AF2C2C; color:#fff; padding:20px 28px; display:flex; align-items:center; justify-content:space-between; border-radius:0 0 16px 16px; box-shadow:0 4px 14px rgba(0,0,0,.08); }
+        .header h1 { font-size:1.4rem; }
+        .header a { color:#fff; text-decoration:none; font-weight:600; }
+        .card { border:1px solid #eee; border-radius:12px; padding:18px; background:#fff; box-shadow:0 6px 14px rgba(0,0,0,.04); margin-top:18px; }
+        table { width:100%; border-collapse:separate; border-spacing:0; }
+        th, td { text-align:left; padding:10px 12px; border-bottom:1px solid #eee; }
+        th { color:#AF2C2C; }
+        .btn { display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:8px; border:1px solid #AF2C2C; background:#AF2C2C; color:#fff; text-decoration:none; cursor:pointer; font-weight:600; }
+        .btn:hover { background:#942525; border-color:#942525; }
+    </style>
+    <script>
+        function confirmDelete(){ return confirm('Delete this reservation?'); }
+    </script>
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="brand"><i class="fas fa-utensils"></i> Dine & Delight</div>
+        <ul class="nav">
+            <li><a href="/admin/dashboard"><i class="fas fa-gauge"></i>Dashboard</a></li>
+            <li><a href="/admin/places"><i class="fas fa-map-marker-alt"></i>Event Spaces</a></li>
+            <li><a href="/admin/menu"><i class="fas fa-burger"></i>Menu</a></li>
+            <li><a href="/admin/events"><i class="fas fa-clipboard-check"></i> Event Requests</a></li>
+            <li><a class="active" href="/admin/reservations"><i class="fas fa-chair"></i> Table Reservations</a></li>
+            <li><a href="/admin/inquiries"><i class="fas fa-question-circle"></i> Inquiries</a></li>
+            <li><a href="/admin/orders"><i class="fas fa-receipt"></i>Food Orders</a></li>
+            <li><a href="/admin/reports"><i class="fas fa-chart-line"></i> Reports</a></li>
+            <hr>
+            <li><a href="/profile"><i class="fas fa-id-badge"></i> My Profile</a></li>
+            <li><a href="/logout"><i class="fas fa-right-from-bracket"></i> Logout</a></li>
+        </ul>
+    </aside>
+    <main class="main">
+        <div class="wrap">
+            <div class="header">
+                <h1><i class="fas fa-chair"></i> Table Reservations</h1>
+            </div>
+            <div class="card">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Table</th>
+                        <th>User</th>
+                        <th>Start</th>
+                        <th>End</th>
+                        <th>Guests</th>
+                        <th>Advance Paid</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="r : ${reservations}">
+                        <td th:text="${r.id}"></td>
+                        <td th:text="${r.diningTable.tableCode}"></td>
+                        <td th:text="${r.user.name}"></td>
+                        <td th:text="${#temporals.format(r.startTime, 'MMM d, yyyy h:mm a')}"></td>
+                        <td th:text="${#temporals.format(r.endTime, 'MMM d, yyyy h:mm a')}"></td>
+                        <td th:text="${r.guestCount}"></td>
+                        <td th:text="${r.advancePaymentPaid ? 'Yes' : 'No'}"></td>
+                        <td style="display:flex; gap:8px;">
+                            <form th:if="${!r.advancePaymentPaid}" th:action="@{'/admin/reservations/' + ${r.id} + '/approve'}" method="post">
+                                <button class="btn" type="submit"><i class="fas fa-check"></i> Approve</button>
+                            </form>
+                            <form th:action="@{'/admin/reservations/' + ${r.id} + '/delete'}" method="post" onsubmit="return confirmDelete()">
+                                <button class="btn" type="submit" style="background:#B91C1C; border-color:#B91C1C"><i class="fas fa-trash"></i> Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+</body>
+</html>
+
+

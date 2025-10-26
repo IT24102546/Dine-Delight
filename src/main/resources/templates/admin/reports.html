@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Reports</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background:#F8F5F0; color:#3C3C3C; min-height:100vh; }
+        .layout { display:flex; min-height:100vh; }
+        .sidebar { width:220px; background:#fff; border-right:1px solid #eee; padding:22px 18px; position:sticky; top:0; align-self:flex-start; height:100vh; }
+        .brand { display:flex; align-items:center; gap:10px; color:#AF2C2C; font-weight:800; margin-bottom:18px; }
+        .nav { list-style:none; }
+        .nav li { margin-bottom:8px; }
+        .nav a { display:flex; align-items:center; gap:10px; padding:10px 12px; color:#3C3C3C; text-decoration:none; border-radius:8px; }
+        .nav a:hover, .nav a.active { background:#F8F5F0; color:#AF2C2C; }
+        .main { flex:1; padding:0 24px 24px 24px; }
+        .wrap { width:100%; max-width:1200px; margin:0 auto; }
+        .header { background:#AF2C2C; color:#fff; padding:20px 28px; display:flex; align-items:center; justify-content:space-between; border-radius:0 0 16px 16px; box-shadow:0 4px 14px rgba(0,0,0,.08); margin: 0 -24px 16px -24px; }
+        .header h1 { font-size:1.2rem; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; }
+        .card { border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; background:#fff; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .kpis { display:grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px; }
+        .kpi { background:#fff; border:1px solid #e5e7eb; border-radius:8px; padding:12px; }
+        .muted { color:#6b7280; font-size:12px; }
+        .title { font-size: 18px; font-weight: 600; }
+        .toolbar { display:flex; gap:8px; }
+        select, button { padding:8px 10px; border-radius:6px; border:1px solid #d1d5db; background:white; }
+        a.btn { text-decoration:none; padding:8px 10px; border-radius:6px; border:1px solid #d1d5db; background:white; color:#111827; }
+        @media (max-width: 1000px) { .layout { flex-direction:column; } .sidebar { position:static; height:auto; width:100%; border-right:none; border-bottom:1px solid #eee; } .header { border-radius:0; } }
+    </style>
+    <script>
+        function changeMonths(sel){
+            const months = sel.value;
+            const url = new URL(window.location.href);
+            url.searchParams.set('months', months);
+            window.location.href = url.toString();
+        }
+    </script>
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="brand"><i class="fas fa-utensils"></i> Dine & Delight</div>
+        <ul class="nav">
+            <li><a href="/admin/dashboard"><i class="fas fa-gauge"></i>Dashboard</a></li>
+            <li><a href="/admin/places"><i class="fas fa-map-marker-alt"></i>Event Spaces</a></li>
+            <li><a href="/admin/menu"><i class="fas fa-burger"></i>Menu</a></li>
+            <li><a href="/admin/events"><i class="fas fa-clipboard-check"></i> Event Requests</a></li>
+            <li><a href="/admin/inquiries"><i class="fas fa-question-circle"></i> Inquiries</a></li>
+            <li><a href="/admin/orders"><i class="fas fa-receipt"></i>Food Orders</a></li>
+            <li><a class="active"  href="/admin/reports"><i class="fas fa-chart-line"></i> Reports</a></li>
+            <hr>
+            <li><a href="/profile"><i class="fas fa-id-badge"></i> My Profile</a></li>
+            <li><a href="/logout"><i class="fas fa-right-from-bracket"></i> Logout</a></li>
+        </ul>
+    </aside>
+    <main class="main">
+        <div class="wrap">
+            <div class="header">
+                <h1><i class="fas fa-chart-line"></i> Reports</h1>
+                <div class="toolbar">
+                    <select onchange="changeMonths(this)">
+                        <option th:selected="${summary.labels.size() == 3}" value="3">Last 3 months</option>
+                        <option th:selected="${summary.labels.size() == 6}" value="6">Last 6 months</option>
+                        <option th:selected="${summary.labels.size() == 12}" value="12">Last 12 months</option>
+                    </select>
+                    <a th:href="@{'/admin/reports/data'(months=${summary.labels.size()})}" class="btn" download>Export JSON</a>
+                </div>
+            </div>
+
+            <div class="kpis">
+                <div class="kpi">
+                    <div class="muted">Total Orders</div>
+                    <div th:text="${summary.totalOrders}"></div>
+                </div>
+                <div class="kpi">
+                    <div class="muted">Order Revenue (LKR)</div>
+                    <div th:text="${summary.totalOrderRevenueLkr}"></div>
+                </div>
+                <div class="kpi">
+                    <div class="muted">Reservations</div>
+                    <div th:text="${summary.totalReservations}"></div>
+                </div>
+                <div class="kpi">
+                    <div class="muted">Reservation Revenue (LKR)</div>
+                    <div th:text="${summary.totalReservationRevenueLkr}"></div>
+                </div>
+                <div class="kpi">
+                    <div class="muted">Events Approved</div>
+                    <div th:text="${summary.totalEvents}"></div>
+                </div>
+                <div class="kpi">
+                    <div class="muted">Event Revenue (LKR)</div>
+                    <div th:text="${summary.totalEventRevenueLkr}"></div>
+                </div>
+                <div class="kpi">
+                    <div class="muted">Inquiries</div>
+                    <div th:text="${summary.totalInquiries}"></div>
+                </div>
+            </div>
+
+            <div class="grid">
+                <div class="card">
+                    <div class="muted">Orders: Count vs Revenue</div>
+                    <canvas id="ordersChart" height="160"></canvas>
+                </div>
+                <div class="card">
+                    <div class="muted">Reservations: Count vs Revenue</div>
+                    <canvas id="reservationsChart" height="160"></canvas>
+                </div>
+                <div class="card">
+                    <div class="muted">Events: Count vs Revenue</div>
+                    <canvas id="eventsChart" height="160"></canvas>
+                </div>
+                <div class="card">
+                    <div class="muted">Inquiries: Count</div>
+                    <canvas id="inquiriesChart" height="160"></canvas>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script th:inline="javascript">
+    const summary = /*[[${summary}]]*/ {};
+    const labels = summary.labels || [];
+
+    const primary = '#2563eb';
+    const secondary = '#16a34a';
+    const accent = '#9333ea';
+    const gray = '#6b7280';
+
+    function lineBar(ctx, label1, data1, label2, data2){
+        return new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: label1, data: data1, backgroundColor: primary, yAxisID: 'y' },
+                    { label: label2, data: data2, type: 'line', borderColor: secondary, backgroundColor: secondary, yAxisID: 'y1' }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: { position: 'left', grid: { color: '#f3f4f6' } },
+                    y1: { position: 'right', grid: { drawOnChartArea: false } }
+                }
+            }
+        });
+    }
+
+    lineBar(document.getElementById('ordersChart'), 'Orders', summary.ordersCount, 'Revenue (LKR)', summary.ordersRevenueLkr);
+    lineBar(document.getElementById('reservationsChart'), 'Reservations', summary.reservationsCount, 'Revenue (LKR)', summary.reservationRevenueLkr);
+    lineBar(document.getElementById('eventsChart'), 'Events', summary.eventsCount, 'Revenue (LKR)', summary.eventsRevenueLkr);
+
+    new Chart(document.getElementById('inquiriesChart'), {
+        type: 'bar',
+        data: { labels, datasets: [{ label: 'Inquiries', data: summary.inquiriesCount, backgroundColor: accent }] },
+        options: { responsive: true, scales: { y: { grid: { color: '#f3f4f6' } } } }
+    });
+</script>
+</body>
+</html>
+
+

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Management - Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background:#F8F5F0; color:#3C3C3C; min-height:100vh; }
+        .layout { display:flex; min-height:100vh; }
+        .sidebar { width:220px; background:#fff; border-right:1px solid #eee; padding:22px 18px; position:sticky; top:0; align-self:flex-start; height:100vh; }
+        .brand { display:flex; align-items:center; gap:10px; color:#AF2C2C; font-weight:800; margin-bottom:18px; }
+        .nav { list-style:none; }
+        .nav li { margin-bottom:8px; }
+        .nav a { display:flex; align-items:center; gap:10px; padding:10px 12px; color:#3C3C3C; text-decoration:none; border-radius:8px; }
+        .nav a:hover, .nav a.active { background:#F8F5F0; color:#AF2C2C; }
+        .main { flex:1; padding:0 24px 24px 24px; }
+        .wrap { width:100%; max-width:1200px; margin:0 auto; }
+        .header { background:#AF2C2C; color:#fff; padding:20px 28px; display:flex; align-items:center; justify-content:space-between; border-radius:0 0 16px 16px; box-shadow:0 4px 14px rgba(0,0,0,.08); }
+        .header h1 { font-size:1.4rem; }
+        .content { padding:26px 0; display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+        .card { border:1px solid #eee; border-radius:12px; padding:18px; background:#fff; box-shadow:0 6px 14px rgba(0,0,0,.05); transition:0.3s; }
+        .card.editing { border:2px solid #AF2C2C; }
+        label { font-weight:600; font-size:.9rem; display:block; margin-bottom:6px; }
+        input, textarea { width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; margin-bottom:10px; }
+        .btn { display:inline-flex; align-items:center; gap:6px; padding:8px 12px; border-radius:8px; border:none; background:#AF2C2C; color:#fff; font-weight:600; cursor:pointer; }
+        .btn:hover { background:#942525; }
+        .btn-gray { background:#777; }
+        table { width:100%; border-collapse:collapse; }
+        th, td { padding:10px 12px; border-bottom:1px solid #eee; vertical-align:top; text-align:left; }
+        th { color:#AF2C2C; }
+        .thumb { width:64px; height:64px; object-fit:cover; border-radius:8px; border:1px solid #eee; margin-bottom:6px; }
+        hr { margin:10px 0; border:none; border-top:1px solid #eee; }
+        @media (max-width: 1000px) {
+            .content { grid-template-columns:1fr; }
+            .sidebar { position:static; height:auto; width:100%; border-right:none; border-bottom:1px solid #eee; }
+            .layout { flex-direction:column; }
+        }
+    </style>
+</head>
+<body>
+<div class="layout">
+    <!-- Sidebar identical to dashboard -->
+    <aside class="sidebar">
+        <div class="brand"><i class="fas fa-utensils"></i> Dine & Delight</div>
+        <ul class="nav">
+            <li><a href="/admin/dashboard"><i class="fas fa-gauge"></i>Dashboard</a></li>
+            <li><a href="/admin/places"><i class="fas fa-map-marker-alt"></i>Event Spaces</a></li>
+            <li><a href="/admin/reservations"><i class="fas fa-chair"></i>Table Reservations</a></li>
+            <li><a class="active" href="/admin/menu"><i class="fas fa-burger"></i>Menu</a></li>
+            <li><a href="/admin/events"><i class="fas fa-clipboard-check"></i> Event Requests</a></li>
+            <li><a href="/admin/inquiries"><i class="fas fa-question-circle"></i> Inquiries</a></li>
+            <li><a href="/admin/orders"><i class="fas fa-receipt"></i>Food Orders</a></li>
+            <li><a href="/admin/reports"><i class="fas fa-chart-line"></i> Reports</a></li>
+            <hr>
+            <li><a href="/profile"><i class="fas fa-id-badge"></i> My Profile</a></li>
+            <li><a href="/logout"><i class="fas fa-right-from-bracket"></i> Logout</a></li>
+        </ul>
+    </aside>
+
+    <main class="main">
+        <div class="wrap">
+            <div class="header"><h1><i class="fas fa-burger"></i> Menu Management</h1></div>
+
+            <div class="content">
+                <!-- Add/Edit Form -->
+                <div class="card" id="formCard">
+                    <h2 id="formTitle">Add New Item</h2>
+                    <form id="menuForm" th:action="@{/admin/menu}" method="post">
+                        <input type="hidden" id="itemId" name="id">
+
+                        <label>Name</label>
+                        <input type="text" id="name" name="name" required>
+
+                        <label>Description</label>
+                        <textarea rows="3" id="description" name="description"></textarea>
+
+                        <label>Price (LKR)</label>
+                        <input type="number" step="0.01" min="0" id="price" name="price" placeholder="e.g. 250.00" required>
+
+                        <label>Photo URL</label>
+                        <input type="url" id="photoUrl" name="photoUrl">
+
+                        <label><input type="checkbox" id="available" name="available"> Available</label>
+
+                        <button class="btn" type="submit" id="submitBtn"><i class="fas fa-plus"></i> Add Item</button>
+                        <button class="btn btn-gray" type="button" id="cancelEdit" style="display:none;"><i class="fas fa-times"></i> Cancel</button>
+                    </form>
+                </div>
+
+                <!-- Existing Items -->
+                <div class="card">
+                    <h2>Existing Items</h2>
+                    <table>
+                        <thead>
+                        <tr><th>Item</th><th>Details</th><th>Actions</th></tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="i : ${items}">
+                            <td>
+                                <img th:if="${i.photoUrl}" th:src="${i.photoUrl}" class="thumb" alt="Menu Photo">
+                                <div><b th:text="${i.name}"></b></div>
+                                <div th:text="${i.available} ? 'Available' : 'Out of Stock'"></div>
+                            </td>
+                            <td>
+                                <div th:text="${i.description}"></div>
+                                <div><b>Price:</b> Rs.<span th:text="${i.price}"></span></div>
+                            </td>
+                            <td>
+                                <button class="btn edit-btn" type="button"
+                                        th:attr="data-id=${i.id},
+                                   data-name=${i.name},
+                                   data-description=${i.description},
+                                   data-price=${i.price},
+                                   data-photo=${i.photoUrl},
+                                   data-available=${i.available}">
+                                    <i class="fas fa-pen"></i> Edit
+                                </button>
+                                <form th:action="@{'/admin/menu/' + ${i.id} + '/delete'}" method="post" style="margin-top:6px;">
+                                    <button class="btn" type="submit" style="background:#B91C1C;"><i class="fas fa-trash"></i> Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    // Edit item handler
+    document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const id = btn.getAttribute('data-id');
+            const name = btn.getAttribute('data-name');
+            const description = btn.getAttribute('data-description');
+            const price = btn.getAttribute('data-price');
+            const photoUrl = btn.getAttribute('data-photo');
+            const available = btn.getAttribute('data-available') === 'true';
+
+            document.getElementById('formTitle').innerText = 'Edit Item';
+            document.getElementById('menuForm').action = '/admin/menu/' + id;
+            document.getElementById('submitBtn').innerHTML = '<i class="fas fa-save"></i> Save Changes';
+            document.getElementById('cancelEdit').style.display = '';
+            document.getElementById('formCard').classList.add('editing');
+
+            document.getElementById('itemId').value = id;
+            document.getElementById('name').value = name;
+            document.getElementById('description').value = description;
+            document.getElementById('price').value = price;
+            document.getElementById('photoUrl').value = photoUrl;
+            document.getElementById('available').checked = available;
+        });
+    });
+
+    // Cancel edit
+    document.getElementById('cancelEdit').addEventListener('click', () => {
+        document.getElementById('formTitle').innerText = 'Add New Item';
+        document.getElementById('menuForm').action = '/admin/menu';
+        document.getElementById('submitBtn').innerHTML = '<i class="fas fa-plus"></i> Add Item';
+        document.getElementById('cancelEdit').style.display = 'none';
+        document.getElementById('menuForm').reset();
+        document.getElementById('formCard').classList.remove('editing');
+    });
+</script>
+</body>
+</html>

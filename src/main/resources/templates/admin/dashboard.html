@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Dine & Delight</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background:#F8F5F0; color:#3C3C3C; min-height:100vh; }
+        .layout { display:flex; min-height:100vh; }
+        .sidebar { width:220px; background:#fff; border-right:1px solid #eee; padding:22px 18px; position:sticky; top:0; align-self:flex-start; height:100vh; }
+        .brand { display:flex; align-items:center; gap:10px; color:#AF2C2C; font-weight:800; margin-bottom:18px; }
+        .nav { list-style:none; }
+        .nav li { margin-bottom:8px; }
+        .nav a { display:flex; align-items:center; gap:10px; padding:10px 12px; color:#3C3C3C; text-decoration:none; border-radius:8px; }
+        .nav a:hover, .nav a.active { background:#F8F5F0; color:#AF2C2C; }
+        .main { flex:1; padding:0 24px 24px 24px; }
+        .wrap { width:100%; max-width:1200px; margin:0 auto; }
+        .header { background:#AF2C2C; color:#fff; padding:20px 28px; display:flex; align-items:center; justify-content:space-between; border-radius:0 0 16px 16px; box-shadow:0 4px 14px rgba(0,0,0,.08); }
+        .header h1 { font-size:1.4rem; }
+        .header a { color:#fff; text-decoration:none; font-weight:600; }
+        .content { padding:26px 0; display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+        .card { border:1px solid #eee; border-radius:12px; padding:18px; background:#fff; box-shadow:0 6px 14px rgba(0,0,0,.04); }
+        .card h2 { color:#AF2C2C; font-size:1.2rem; margin-bottom:12px; }
+        label { font-weight:600; font-size:.9rem; display:block; margin-bottom:6px; }
+        input { width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; margin-bottom:10px; background:#fff; }
+        .btn { display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius:8px; border:1px solid #AF2C2C; background:#AF2C2C; color:#fff; text-decoration:none; cursor:pointer; font-weight:600; }
+        .btn:hover { background:#942525; border-color:#942525; }
+        table { width:100%; border-collapse:separate; border-spacing:0; }
+        th, td { text-align:left; padding:10px 12px; border-bottom:1px solid #eee; }
+        th { color:#AF2C2C; }
+        @media (max-width: 1000px) { .content { grid-template-columns:1fr; }
+            .sidebar { position:static; height:auto; width:100%; border-right:none; border-bottom:1px solid #eee; }
+            .layout { flex-direction:column; }
+        }
+    </style>
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="brand"><i class="fas fa-utensils"></i> Dine & Delight</div>
+        <ul class="nav">
+            <li><a class="active" href="/admin/dashboard"><i class="fas fa-gauge"></i>Dashboard</a></li>
+            <li><a href="/admin/places"><i class="fas fa-map-marker-alt"></i>Event Spaces</a></li>
+            <li><a href="/admin/reservations"><i class="fas fa-chair"></i>Table Reservations</a></li>
+            <li><a href="/admin/menu"><i class="fas fa-burger"></i>Menu</a></li>
+            <li><a href="/admin/events"><i class="fas fa-clipboard-check"></i> Event Requests</a></li>
+            <li><a href="/admin/inquiries"><i class="fas fa-question-circle"></i> Inquiries</a></li>
+            <li><a href="/admin/orders"><i class="fas fa-receipt"></i>Food Orders</a></li>
+            <li><a href="/admin/reports"><i class="fas fa-chart-line"></i> Reports</a></li>
+            <hr>
+            <li><a href="/profile"><i class="fas fa-id-badge"></i> My Profile</a></li>
+            <li><a href="/logout"><i class="fas fa-right-from-bracket"></i> Logout</a></li>
+        </ul>
+    </aside>
+    <main class="main">
+        <div class="wrap">
+            <div class="header">
+                <h1><i class="fas fa-gauge"></i> Admin Dashboard</h1>
+            </div>
+            <div class="content">
+                <div class="card">
+                    <h2>Add New Table</h2>
+                    <form id="newTableForm" th:action="@{/admin/tables}" method="post" th:object="${tableForm}">
+                        <label>Table Code</label>
+                        <input type="text" th:field="*{tableCode}" placeholder="e.g. T7" required pattern="^[A-Za-z0-9-]{1,10}$" aria-describedby="tableCodeHelp">
+                        <small id="tableCodeHelp" style="color:#666; font-size:0.85rem;">Use 1-10 letters/numbers or hyphen. Example: T7, A-12.</small>
+                        <div id="newTableCodeError" style="color:#B91C1C; font-size:0.85rem; display:none;">Please enter a valid code (1-10 letters/numbers or hyphen).</div>
+                        <label>Capacity</label>
+                        <input type="number" th:field="*{capacity}" min="1" required aria-describedby="capacityHelp">
+                        <small id="capacityHelp" style="color:#666; font-size:0.85rem;">Minimum 1 guest.</small>
+                        <div id="newCapacityError" style="color:#B91C1C; font-size:0.85rem; display:none;">Capacity must be at least 1.</div>
+                        <label>Price per Person per Hour (LKR)</label>
+                        <input type="number" th:field="*{pricePerPersonPerHourLkr}" min="0" step="1" placeholder="500" required aria-describedby="priceHelp">
+                        <small id="priceHelp" style="color:#666; font-size:0.85rem;">Whole number in LKR. Example: 500 means LKR 500.00</small>
+                        <div id="newPriceError" style="color:#B91C1C; font-size:0.85rem; display:none;">Price must be a whole number ≥ 0.</div>
+                        <button class="btn" type="submit"><i class="fas fa-plus"></i> Add Table</button>
+                    </form>
+                    <div class="alert" th:if="${param.added}" style="margin-top:10px; background:#E6F4EA; color:#2E7D32; padding:10px; border-radius:8px;">Table added.</div>
+                </div>
+                <div class="card">
+                    <h2>Existing Tables</h2>
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Capacity</th>
+                            <th>Price per Person/Hour</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="t : ${tables}">
+                            <td th:text="${t.tableCode}"></td>
+                            <td th:text="${t.capacity}"></td>
+                            <td th:text="'LKR ' + ${#numbers.formatDecimal(t.pricePerPersonPerHourCents / 100.0, 1, 'COMMA', 2, 'POINT')}">LKR 500.00</td>
+                            <td style="display:flex; gap:8px;">
+                                <button class="btn" type="button"
+                                        th:attr="data-id=${t.id},data-code=${t.tableCode},data-capacity=${t.capacity},data-pricecents=${t.pricePerPersonPerHourCents}"
+                                        onclick="openTableEditModal(this)"><i class="fas fa-pen"></i> Edit</button>
+                                <form th:action="@{'/admin/tables/' + ${t.id} + '/delete'}" method="post" onsubmit="return confirm('Delete table ' + /*[[${t.tableCode}]]*/ 'this' + '?');">
+                                    <button class="btn" type="submit" style="background:#B91C1C; border-color:#B91C1C"><i class="fas fa-trash"></i> Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card" style="grid-column: 1 / -1;">
+                    <h2>Event Places</h2>
+                    <p>Manage event locations and spaces.</p>
+                    <a class="btn" href="/admin/places"><i class="fas fa-map-marker-alt"></i> Manage Places</a>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    // Simple modal styles
+    const modalStyles = document.createElement('style');
+    modalStyles.innerHTML = `
+    .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.4); display:none; align-items:center; justify-content:center; padding:16px; }
+    .modal { width:100%; max-width:520px; background:#fff; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.2); }
+    .modal header { padding:16px 20px; border-bottom:1px solid #eee; display:flex; align-items:center; justify-content:space-between; }
+    .modal .body { padding:18px 20px; }
+    .modal .actions { padding:14px 20px; border-top:1px solid #eee; display:flex; gap:10px; justify-content:flex-end; }
+  `;
+    document.head.appendChild(modalStyles);
+
+    function openTableEditModal(btn){
+        const id = btn.getAttribute('data-id');
+        const code = btn.getAttribute('data-code');
+        const capacity = btn.getAttribute('data-capacity');
+        const priceCents = parseInt(btn.getAttribute('data-pricecents') || '0', 10);
+        const form = document.getElementById('tableEditForm');
+        form.action = '/admin/tables/' + id;
+        document.getElementById('editTableCode').value = code;
+        document.getElementById('editCapacity').value = capacity;
+        document.getElementById('editPrice').value = Math.round(priceCents / 100);
+        document.getElementById('tableEditOverlay').style.display = 'flex';
+    }
+    function closeTableEditModal(){
+        document.getElementById('tableEditOverlay').style.display = 'none';
+    }
+    // Toastify notifications
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('added')) {
+        Toastify({
+            text: "Table added successfully!",
+            duration: 3000,
+            gravity: "top",
+            position: "right",
+            backgroundColor: "#10B981",
+            stopOnFocus: true
+        }).showToast();
+    }
+
+    // Client-side validation for Add Table
+    document.getElementById('newTableForm')?.addEventListener('submit', function(e){
+        const code = this.querySelector('[name="tableCode"]').value.trim();
+        const capacity = parseInt(this.querySelector('[name="capacity"]').value || '0', 10);
+        const price = parseInt(this.querySelector('[name="pricePerPersonPerHourLkr"]').value || '0', 10);
+        let valid = true;
+        const codeOk = /^[A-Za-z0-9-]{1,10}$/.test(code);
+        document.getElementById('newTableCodeError').style.display = codeOk ? 'none' : 'block';
+        if (!codeOk) valid = false;
+        const capOk = capacity >= 1;
+        document.getElementById('newCapacityError').style.display = capOk ? 'none' : 'block';
+        if (!capOk) valid = false;
+        const priceOk = Number.isInteger(price) && price >= 0;
+        document.getElementById('newPriceError').style.display = priceOk ? 'none' : 'block';
+        if (!priceOk) valid = false;
+        if (!valid) e.preventDefault();
+    });
+</script>
+
+<!-- Edit Table Modal -->
+<div id="tableEditOverlay" class="modal-overlay">
+    <div class="modal">
+        <header>
+            <h3>Edit Table</h3>
+            <button class="btn" type="button" onclick="closeTableEditModal()" style="background:#6B7280; border-color:#6B7280"><i class="fas fa-times"></i></button>
+        </header>
+        <div class="body">
+            <form id="tableEditForm" method="post">
+                <label>Table Code</label>
+                <input id="editTableCode" name="tableCode" type="text" required>
+                <label>Capacity</label>
+                <input id="editCapacity" name="capacity" type="number" min="1" required>
+                <label>Price per Person per Hour (LKR)</label>
+                <input id="editPrice" name="pricePerPersonPerHourLkr" type="number" min="0" step="1" required>
+                <div class="actions">
+                    <button class="btn" type="button" onclick="closeTableEditModal()" style="background:#6B7280; border-color:#6B7280">Cancel</button>
+                    <button class="btn" type="submit"><i class="fas fa-save"></i> Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script>document.getElementById('tableEditOverlay').addEventListener('click', function(e){ if(e.target===this) closeTableEditModal(); });</script>
+</div>
+</body>
+</html>
+
+

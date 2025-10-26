@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book an Event - Dine & Delight</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#F8F5F0',    // 60% - Light neutral background
+                        secondary: '#D4A76A',  // 30% - Warm gold accent
+                        accent: '#AF2C2C',     // 10% - Deep red for highlights
+                        darktext: '#3C3C3C',   // Text color
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-image: linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.9)),
+            url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect fill="none" stroke="%23D4A76A" stroke-width="0.5" x="0" y="0" width="100" height="100"/></svg>');
+            background-size: 30px 30px;
+            overflow: hidden;
+            font-size: 15px;
+        }
+    </style>
+</head>
+<body class="bg-primary text-darktext min-h-screen">
+<div class="flex h-screen">
+    <!-- Sidebar Navigation -->
+    <div class="w-64 bg-secondary text-white flex flex-col">
+        <!-- Brand Logo -->
+        <div class="p-5 border-b border-secondary/30">
+            <h1 class="text-2xl font-bold">Dine & Delight</h1>
+            <p class="text-sm opacity-90 tracking-wider">RESTAURANT & EVENTS</p>
+        </div>
+
+        <!-- Navigation Links -->
+        <nav class="flex-1 py-4">
+            <div class="px-4 mb-6">
+                <p class="text-xs uppercase tracking-wider opacity-70 mb-3">Main Navigation</p>
+                <a href="/dashboard" class="flex items-center py-3 px-4 hover:bg-secondary/80 rounded-lg mb-2 transition-colors">
+                    <i class="fas fa-gauge-high mr-3"></i>
+                    Dashboard
+                </a>
+                <a href="/reservations" class="flex items-center py-3 px-4 hover:bg-secondary/80 rounded-lg mb-2 transition-colors">
+                    <i class="fas fa-chair mr-3"></i>
+                    Table Reservations
+                </a>
+                <a href="/reservations/my" class="flex items-center py-3 px-4 hover:bg-secondary/80 rounded-lg mb-2 transition-colors">
+                    <i class="fas fa-list mr-3"></i>
+                    My Reservations
+                </a>
+                <a href="/events" class="flex items-center py-3 px-4 bg-accent rounded-lg text-white mb-2">
+                    <i class="fas fa-calendar-plus mr-3"></i>
+                    Event Booking
+                </a>
+                <a href="/orders" class="flex items-center py-3 px-4 hover:bg-secondary/80 rounded-lg mb-2 transition-colors">
+                    <i class="fas fa-receipt mr-3"></i>
+                    Food Orders
+                </a>
+                <a href="/inquiries" class="flex items-center py-3 px-4 hover:bg-secondary/80 rounded-lg mb-2 transition-colors">
+                    <i class="fas fa-question-circle mr-3"></i>
+                    My Inquiries
+                </a>
+                <a href="/events/my" class="flex items-center py-3 px-4 hover:bg-secondary/80 rounded-lg mb-2 transition-colors">
+                    <i class="fas fa-calendar-check mr-3"></i>
+                    My Event Requests
+                </a>
+                <a href="/menu" class="flex items-center py-3 px-4 hover:bg-secondary/80 rounded-lg mb-2 transition-colors">
+                    <i class="fas fa-utensils mr-3"></i>
+                    Menu
+                </a>
+            </div>
+
+            <div class="px-4 mb-6">
+                <p class="text-xs uppercase tracking-wider opacity-70 mb-3">Account</p>
+                <a href="/profile" class="flex items-center py-3 px-4 hover:bg-secondary/80 rounded-lg mb-2 transition-colors">
+                    <i class="fas fa-user mr-3"></i>
+                    My Profile
+                </a>
+                <a href="/logout" class="flex items-center py-3 px-4 hover:bg-secondary/80 rounded-lg mb-2 transition-colors">
+                    <i class="fas fa-right-from-bracket mr-3"></i>
+                    Log Out
+                </a>
+            </div>
+        </nav>
+
+        <!-- Footer -->
+        <div class="p-4 border-t border-secondary/30">
+            <a href="/logout" class="flex items-center py-2 px-4 hover:bg-secondary/80 rounded-lg transition-colors">
+                <i class="fas fa-right-from-bracket mr-3"></i>
+                Logout
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 overflow-y-auto">
+        <!-- Header -->
+        <header class="bg-white shadow-sm p-4 flex justify-between items-center">
+            <h2 class="text-xl font-semibold">Book an Event</h2>
+            <div class="flex items-center space-x-4">
+                <a href="/events/my" class="text-accent hover:text-accent/80">
+                    <i class="fas fa-list mr-2"></i>
+                    My Event Requests
+                </a>
+                <div class="relative">
+                </div>
+                <div class="flex items-center">
+                    <div class="w-8 h-8 bg-accent rounded-full flex items-center justify-center text-white">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <span class="ml-2">John Doe</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="p-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Request Details Form -->
+                <div class="bg-white rounded-xl shadow-sm p-6">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-calendar-plus text-accent text-xl"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold">Request Details</h3>
+                    </div>
+
+                    <form id="eventSearchForm" th:action="@{/events/search}" method="get">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Date</label>
+                                <input type="date" name="date" required th:value="${date}" aria-describedby="dateHelp"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent">
+                                <small id="dateHelp" class="text-gray-500">Select a valid future date.</small>
+                                <div id="dateErr" class="text-red-600 text-sm hidden">Please select a valid date.</div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Time</label>
+                                <input type="time" name="time" required th:value="${time}" aria-describedby="timeHelp"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent">
+                                <small id="timeHelp" class="text-gray-500">Use 24h format HH:MM.</small>
+                                <div id="timeErr" class="text-red-600 text-sm hidden">Please enter a valid time.</div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Duration (minutes)</label>
+                                <input type="number" name="durationMinutes" value="180" min="60" step="30" th:value="${durationMinutes}" aria-describedby="durHelp"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent">
+                                <small id="durHelp" class="text-gray-500">Minimum 60, in steps of 30.</small>
+                                <div id="durErr" class="text-red-600 text-sm hidden">Duration must be ≥60 and a multiple of 30.</div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Guests</label>
+                                <input type="number" name="guests" value="20" min="1" th:value="${guests}" aria-describedby="guestsHelp"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent">
+                                <small id="guestsHelp" class="text-gray-500">At least 1 guest.</small>
+                                <div id="guestsErr" class="text-red-600 text-sm hidden">Guests must be at least 1.</div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full bg-accent text-white py-3 px-6 rounded-lg hover:bg-accent/90 transition-colors font-medium">
+                            <i class="fas fa-search mr-2"></i>
+                            Find Available Spaces
+                        </button>
+
+                        <!-- Alert Messages -->
+                        <div th:if="${param.conflict}" class="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            Requested slot conflicts with an existing booking.
+                        </div>
+                        <div th:if="${param.submitted}" class="mt-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+                            <i class="fas fa-check-circle mr-2"></i>
+                            Event request submitted successfully.
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Available Spaces -->
+                <div class="bg-white rounded-xl shadow-sm p-6">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-warehouse text-secondary text-xl"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold">Available Spaces</h3>
+                    </div>
+
+                    <!-- Initial State -->
+                    <div th:if="${availableSpaces == null}" class="text-center py-12 text-gray-500">
+                        <i class="fas fa-search text-4xl mb-4 block text-gray-300"></i>
+                        <p>Search to see availability</p>
+                    </div>
+
+                    <!-- No Spaces Found -->
+                    <div th:if="${availableSpaces != null && #lists.isEmpty(availableSpaces)}" class="text-center py-12 text-gray-500">
+                        <i class="fas fa-search text-4xl mb-4 block text-gray-300"></i>
+                        <p class="font-medium mb-2">No available spaces found</p>
+                        <p class="text-sm">Try a different date, time, or guest count.</p>
+                    </div>
+
+                    <!-- Available Spaces List -->
+                    <div th:if="${availableSpaces != null && !#lists.isEmpty(availableSpaces)}" class="space-y-3">
+                        <div th:each="s : ${availableSpaces}" class="border border-gray-200 rounded-lg p-4 hover:border-accent transition-colors">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-secondary/10 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-warehouse text-secondary"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium" th:text="${s.name}">Space Name</h4>
+                                        <p class="text-sm text-gray-600">Capacity: <span th:text="${s.capacity}">0</span> guests</p>
+                                    </div>
+                                </div>
+
+                                <form th:action="@{/events/request}" method="post">
+                                    <input type="hidden" name="spaceId" th:value="${s.id}">
+                                    <input type="hidden" name="date" th:value="${date}">
+                                    <input type="hidden" name="time" th:value="${time}">
+                                    <input type="hidden" name="durationMinutes" th:value="${durationMinutes}">
+                                    <input type="hidden" name="guests" th:value="${guests}">
+                                    <input type="hidden" name="services" value="">
+                                    <button type="submit" class="bg-secondary text-white px-4 py-2 rounded-lg hover:bg-secondary/90 transition-colors">
+                                        <i class="fas fa-paper-plane mr-2"></i>
+                                        Request
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+<script>
+    document.getElementById('eventSearchForm')?.addEventListener('submit', function(e){
+        let ok = true;
+        const date = this.querySelector('[name="date"]').value;
+        const time = this.querySelector('[name="time"]').value;
+        const duration = parseInt(this.querySelector('[name="durationMinutes"]').value || '0', 10);
+        const guests = parseInt(this.querySelector('[name="guests"]').value || '0', 10);
+        const dateOk = !!date;
+        const timeOk = /^\d{2}:\d{2}$/.test(time);
+        const durOk = duration >= 60 && duration % 30 === 0;
+        const guestsOk = guests >= 1;
+        document.getElementById('dateErr').classList.toggle('hidden', dateOk);
+        document.getElementById('timeErr').classList.toggle('hidden', timeOk);
+        document.getElementById('durErr').classList.toggle('hidden', durOk);
+        document.getElementById('guestsErr').classList.toggle('hidden', guestsOk);
+        if (!(dateOk && timeOk && durOk && guestsOk)) e.preventDefault();
+    });
+</script>
+</body>
+</html>
+
+
